@@ -73,7 +73,6 @@ namespace NetShip {
         }
     }
 
-
     /**
      * @brief Convert string to positon
      * 
@@ -106,16 +105,12 @@ namespace NetShip {
         return {4,2};
     }
 
-    ShotResult NetSendPos(position pos) {
+    ShotResult NetSendPosGetRes(position pos) {
         return ShotResult::Miss;
     }
 
-    void NetSendDims(dimensions dims) {
-        // send dimensions to the second player
-    }
-
-    dimensions NetRecieveDims() {
-        return {10, 10};
+    void NetSendRes(ShotResult res) {
+        
     }
 
     position UserGetPos(std::istream& input) {
@@ -127,6 +122,8 @@ namespace NetShip {
         }
         return *optPos;
     }
+
+
 
 
 
