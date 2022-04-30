@@ -13,12 +13,19 @@
 
 namespace NetShip {
     using position = std::pair<std::size_t, std::size_t>;
+    using dimensions = std::pair<std::size_t, std::size_t>;
     using opt_pos = std::optional<position>;
     using opt_size_t = std::optional<std::size_t>;
     using opt_int = std::optional<int>;
 
     using namespace std::placeholders;
     using asio::ip::tcp;
+
+    enum class ShotResult {
+        Miss,
+        Hit,
+        Sink,  
+    };
 
     namespace {
         auto currLocale = std::locale();
@@ -66,10 +73,6 @@ namespace NetShip {
         }
     }
 
-    opt_pos NetworkGetPos() {
-        // TODO implement this
-        return {{4,2}};
-    }
 
     /**
      * @brief Convert string to positon
@@ -97,4 +100,35 @@ namespace NetShip {
 
         return {{*optRowPos, *optColPos}};
     };
+
+    position NetGetPos() {
+        // TODO implement this
+        return {4,2};
+    }
+
+    ShotResult NetSendPos(position pos) {
+        return ShotResult::Miss;
+    }
+
+    void NetSendDims(dimensions dims) {
+        // send dimensions to the second player
+    }
+
+    dimensions NetRecieveDims() {
+        return {10, 10};
+    }
+
+    position UserGetPos(std::istream& input) {
+        std::string line;
+        input >> line;
+        auto optPos = StrToBoardPos(line);
+        if (!optPos) {
+            // repromt user
+        }
+        return *optPos;
+    }
+
+
+
+    
 }// namespace NetShip
