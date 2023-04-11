@@ -36,3 +36,6 @@ build/
 
 # direnv folder
 .direnv/ 
+
+# vscode folder - for now
+.vscode/
