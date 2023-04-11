@@ -39,3 +39,6 @@ build/
 
 # vscode folder - for now
 .vscode/
+
+# result is artifact build by nix
+result/

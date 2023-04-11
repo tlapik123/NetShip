@@ -10,11 +10,11 @@
 
 stdenv.mkDerivation {
     name = "netShip";
-    src = self;
-    buildInputs = with pkgs; [ 
+    src = ./.;
+    buildInputs = [ 
         asio 
     ];
-    nativeBuildInputs = with pkgs; [ 
+    nativeBuildInputs = [ 
         # for debug
         breakpointHook 
         # essential for build
@@ -36,4 +36,4 @@ stdenv.mkDerivation {
     #     mkdir -p $out/bin
     #     mv netShip $out/bin
     # '';
-};
+}
