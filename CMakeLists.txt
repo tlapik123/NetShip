@@ -8,7 +8,11 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(asio REQUIRED IMPORTED_TARGET asio)
 
 set(NETSHIP_TARGET netShip)
-add_executable(${NETSHIP_TARGET} src/main.cpp)
+add_executable(${NETSHIP_TARGET} 
+    src/main.cpp
+    src/net-comms/client.cpp
+    src/net-comms/server.cpp
+)
 
 target_link_libraries(${NETSHIP_TARGET}
     PkgConfig::asio
