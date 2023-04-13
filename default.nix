@@ -1,22 +1,23 @@
 { lib
 , stdenv
-, asio
-, breakpointHook
+# build stuff
 , pkg-config
 , gcc
 , ninja
 , cmake
+# libs
+, asio
+, ftxui
 }:
 
 stdenv.mkDerivation {
     name = "netShip";
     src = ./.;
     buildInputs = [ 
-        asio 
+        asio
+        ftxui
     ];
     nativeBuildInputs = [ 
-        # for debug
-        breakpointHook 
         # essential for build
         pkg-config
         gcc

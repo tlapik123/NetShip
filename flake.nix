@@ -3,29 +3,12 @@
 
   outputs = { self, nixpkgs }:
     let
-      # Systems supported
-      allSystems = [
-        "x86_64-linux" # 64-bit Intel/AMD Linux
-        "aarch64-linux"
-      ];
-
-      # Helper to provide system-specific attributes
-      forAllSystems = f: nixpkgs.lib.genAttrs allSystems (system: f {
-        pkgs = import nixpkgs { inherit system; };
-      });
+      system = "x86_64-linux";
+      pkgs = import nixpkgs { inherit system; overlays = [
+        (final: prev: {netShip = final.callPackage ./default.nix {};})
+      ];};
     in 
     {
-        packages = forAllSystems ({ pkgs }: {
-            default = with pkgs; import ./default.nix { inherit 
-                lib 
-                stdenv  
-                asio 
-                breakpointHook 
-                pkg-config 
-                gcc 
-                ninja 
-                cmake; 
-            };
-        });
+      packages.x86_64-linux.default = pkgs.netShip;
     };
 }
