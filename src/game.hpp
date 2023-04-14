@@ -4,22 +4,22 @@
 #include "net-comms/out-facing/client.hpp"
 #include "net-comms/out-facing/server.hpp"
 #include "net-comms/out-facing/common_cs.hpp"
+#include "initial_menu.hpp"
 #include "net-comms/in_convertors.hpp"
+
+
 
 namespace game {
     void Start() {
-        // initialize menu
-
-        // get all the data needed from menu
-        std::string enemyIpAddress;
-        bool areWeServer;
-
+        // initial menu
+        auto res = CreateMenu();
+        go
         // connect players
         std::unique_ptr<net_comms::CommonCS> transiever;
-        if (areWeServer) {
-            transiever = std::make_unique<net_comms::Server>();
+        if (res.AreWeServer) {
+            transiever = std::make_unique<net_comms::Server>(res.PortNumber);
         } else {
-            transiever = std::make_unique<net_comms::Client>();
+            transiever = std::make_unique<net_comms::Client>(res.IpAddr, res.PortNumber);
         }
 
         // initialize game board

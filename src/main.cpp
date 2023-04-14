@@ -5,12 +5,21 @@
 
 #include "net-comms/controller.hpp"
 
-#include "ftxui/dom/elements.hpp"
-#include "ftxui/screen/screen.hpp"
-#include "ftxui/screen/string.hpp"
+#include "ftxui/component/captured_mouse.hpp"  // for ftxui
+#include "ftxui/component/component.hpp"       // for Toggle, Renderer, Vertical
+#include "ftxui/component/component_base.hpp"  // for ComponentBase
+#include "ftxui/component/screen_interactive.hpp"  // for Component, ScreenInteractive
+#include "ftxui/dom/elements.hpp"  // for text, hbox, vbox, Element
+#include <iostream>
+ 
+#include "initial_menu.hpp"
 
+int main(void) {
+    auto res = CreateMenu();
+    
+    std::cout << res.AreWeServer << std::endl;
+    std::cout << res.IpAddr << std::endl;
+    std::cout << res.PortNumber << std::endl;
 
-int main(int argc, char** argv) {
-    game::Start();
-    return 0;
+    return EXIT_SUCCESS;
 }
