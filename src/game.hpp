@@ -5,6 +5,7 @@
 #include "net-comms/out-facing/server.hpp"
 #include "net-comms/out-facing/common_cs.hpp"
 #include "initial_menu.hpp"
+#include "placement_menu.hpp"
 #include "net-comms/in_convertors.hpp"
 
 
@@ -13,7 +14,6 @@ namespace game {
     void Start() {
         // initial menu
         auto res = CreateMenu();
-        go
         // connect players
         std::unique_ptr<net_comms::CommonCS> transiever;
         if (res.AreWeServer) {
@@ -22,11 +22,19 @@ namespace game {
             transiever = std::make_unique<net_comms::Client>(res.IpAddr, res.PortNumber);
         }
 
-        // initialize game board
-        board_t ourBoard;
-        board_t enemyBoard;
+        data::board_t emptyBoard(10, data::board_t::value_type(10, false));
 
-        ships_t ourShips;
+        data::fleet_rules_t rules = {
+            {5, 1},
+            {4, 1},
+            {3, 1},
+            {2, 2},
+            {1, 2},
+        };
+
+        data::board_t enemyBoard = emptyBoard;
+
+        auto [ourBoard, ourShips] = CreatePlacementMenu(std::move(emptyBoard), rules);
 
         int numOfEnemyShips; // initialize to the number of enemy ships
         int numOfOurShips; // initialize to the number of enemy ships
@@ -79,7 +87,7 @@ namespace game {
 
                     bool sunken = false;
                     // update our ships
-                    foreach(const auto& positions : ourShips) {
+                    for(const auto& positions : ourShips) {
                         if (positions.contains(pos)) {
                             positions.erase(pos);
                             if (positions.empty()) {
@@ -87,7 +95,7 @@ namespace game {
                                 ourShips.erase(position);
                                 // update our own screen with the visual
 
-                                break;
+                                break; // this break is important since we have invalidated the iterator!
                             }
                         }
                     }

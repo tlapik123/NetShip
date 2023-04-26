@@ -9,8 +9,15 @@ find_package(PkgConfig REQUIRED)
 # find asio
 pkg_check_modules(asio REQUIRED IMPORTED_TARGET asio)
 
-# find ftxui
-find_package(ftxui REQUIRED)
+# find ftxui using FetchContent
+include(FetchContent)
+
+FetchContent_Declare(ftxui
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+  GIT_TAG v4.0.0
+  FIND_PACKAGE_ARGS REQUIRED # use installed package if aviable
+)
+FetchContent_MakeAvailable(ftxui)
 
 
 set(NETSHIP_TARGET netShip)
@@ -21,7 +28,7 @@ add_executable(${NETSHIP_TARGET}
     src/net-comms/out-facing/server.cpp
 )
 
-target_compile_options(${NETSHIP_TARGET} PUBLIC "--std=c++20")
+target_compile_features(${NETSHIP_TARGET} PUBLIC cxx_std_20)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
