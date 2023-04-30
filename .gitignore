@@ -32,13 +32,13 @@
 *.app
 
 # build folder
-build/
+build
 
 # direnv folder
-.direnv/ 
+.direnv
 
 # vscode folder - for now
-.vscode/
+.vscode
 
 # result is artifact build by nix
-result/
+result
