@@ -9,7 +9,7 @@ namespace net_comms {
         mEstablishedSocket.write_some(asio::buffer(dataToSend));
     }
     std::vector<std::byte> CommonCS::Recieve() {
-        std::vector<std::byte> data;
+        std::vector<std::byte> data(256);
         auto sizeRead = mEstablishedSocket.read_some(asio::buffer(data));
         return data;
     }

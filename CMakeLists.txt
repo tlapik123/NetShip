@@ -23,9 +23,14 @@ FetchContent_MakeAvailable(ftxui)
 set(NETSHIP_TARGET netShip)
 add_executable(${NETSHIP_TARGET} 
     src/main.cpp
+    src/game-logic/game.cpp
     src/net-comms/out-facing/common_cs.cpp
     src/net-comms/out-facing/client.cpp
     src/net-comms/out-facing/server.cpp
+    src/ui/initial_menu.cpp
+    src/ui/placement_menu.cpp
+    src/ui/game_screen.cpp
+    src/ui/ui_helpers.cpp
 )
 
 target_compile_features(${NETSHIP_TARGET} PUBLIC cxx_std_20)
