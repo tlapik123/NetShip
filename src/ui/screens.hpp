@@ -33,5 +33,11 @@ namespace ui {
     */
     MenuData CreateMenu(int defaultPortNum = 4242);
 
+    /**
+     * @brief Create game screen with your and enemy ships with ability to fire at anemy.
+     * 
+     * @param ourBoard Board with our ships.
+     * @param enemyBoard Board with enemy ships.
+    */
     data::position_t GameScreen(const data::board_t& ourBoard, const data::board_t& enemyBoard);
 }

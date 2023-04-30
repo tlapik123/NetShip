@@ -190,11 +190,11 @@ namespace ui {
             }
             return canvas(std::move(boardCanvas));
         });
-        auto board_with_mouse = CatchEvent(board_renderer, [&](Event e) {
+        auto boardWithMouse = CatchEvent(board_renderer, [&](Event e) {
             if (e.is_mouse()) {
                 auto& mouse = e.mouse();
                 mouseCol = mouse.x - 4;// subtract left side width
-                mouseRow = mouse.y - 5;// subtract top side height
+                mouseRow = mouse.y - 7;// subtract top side height
                 mouseLeft = mouse.button == Mouse::Left;
                 mouseRight = mouse.button == Mouse::Right;
             }
@@ -203,70 +203,25 @@ namespace ui {
 
         auto buttonCheck = Button("Check configuration", screen.ExitLoopClosure());
 
-        auto components = Container::Horizontal({board_with_mouse, buttonCheck});
+        auto components = Container::Horizontal({boardWithMouse, buttonCheck});
 
-        auto game_renderer = Renderer(components, [&] {
-            return vbox({center(text("Place your Ships")),
+        auto placementMenu = Renderer(components, [&] {
+            return 
+            vbox({
+                center(text("Place your Ships")),
+                separator(),
+                hbox({
+                    BoardRender("Your ships", boardWithMouse),
+                    separator(),
+                    vbox({
+                        RulesRender(),
                         separator(),
-                        hbox({vbox({
-                                    text(" "),
-                                    separator(),
-                                    text("01"),
-                                    text("02"),
-                                    text("03"),
-                                    text("04"),
-                                    text("05"),
-                                    text("06"),
-                                    text("07"),
-                                    text("08"),
-                                    text("09"),
-                                    text("10"),
-                            }),
-                            separator(),
-                            vbox({
-                                    text("ABCDEFGHIJ"),
-                                    separator(),
-                                    board_with_mouse->Render(),
-                            }),
-                            separator(),
-                            // TODO: this is hardcoded for now, fix this in some later release
-                            vbox({window(center(text("Fleet:")),
-                                            hbox({
-                                                    vbox({
-                                                            text("#"),
-                                                            separator(),
-                                                            text("1"),
-                                                            text("1"),
-                                                            text("1"),
-                                                            text("2"),
-                                                            text("2"),
-                                                    }),
-                                                    separator(),
-                                                    vbox({
-                                                            text("ship"),
-                                                            separator(),
-                                                            text("Aircraft Carrier"),
-                                                            text("Battleship"),
-                                                            text("Cruiser"),
-                                                            text("Destroyer"),
-                                                            text("Submarine"),
-                                                    }),
-                                                    separator(),
-                                                    vbox({
-                                                            text("size"),
-                                                            separator(),
-                                                            text("5"),
-                                                            text("4"),
-                                                            text("3"),
-                                                            text("2"),
-                                                            text("1"),
-                                                    }),
-                                            })),
-                                    separator(),
-                                    buttonCheck->Render()})})}) |
-                border;
+                        buttonCheck->Render(),
+                    }),
+                }),
+            }) | border;
         });
-        screen.Loop(game_renderer);
+        screen.Loop(placementMenu);
 
         // NOTE: the compiler should hopefully optimize out the tail recursion.
 

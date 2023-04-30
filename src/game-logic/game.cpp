@@ -93,6 +93,29 @@ namespace game {
             return boarderCoords;
         }
 
+
+        /**
+         * @brief Gets the number of ships from the rules given.
+         * @param rules Rules of the game.
+         * @return Number of ships.
+        */
+        data::num_of_ships_t GetNumberOfShipsFromRules(const data::fleet_rules_t& rules) {
+            data::num_of_ships_t retNumOfShips = 0;
+            for (const auto& [_, numOfShips] : rules) {
+                retNumOfShips += numOfShips;
+            }
+            return retNumOfShips;
+        }
+
+        data::fleet_rules_t Rules {
+            {5, 1}, // one ship of size 5
+            {4, 1}, // one ship of size 4
+            {3, 1}, // one ship of size 4
+            {2, 2}, // two ships of size 2
+            {1, 2}, // two ships of size 1
+        };
+        // TODO: count number of ships from the rules
+        data::num_of_ships_t DefaultNumOfShips = GetNumberOfShipsFromRules(Rules);
     }
 
     void Start() {
@@ -108,21 +131,11 @@ namespace game {
         }
         std::cout << "Connected" << std::endl;
 
+
         data::board_t emptyBoard(10, data::board_t::value_type(10, false));
-
-        data::fleet_rules_t rules = {
-            {5, 1}, // one ship of size 5
-            {4, 1}, // one ship of size 4
-            {3, 1}, // one ship of size 4
-            {2, 2}, // two ships of size 2
-            {1, 2}, // two ships of size 1
-        };
-        // TODO: count number of ships from the rules
-        constexpr int DefaultNumOfShips = 7; // TODO: hardcoded for now
-
         data::board_t enemyBoard = emptyBoard;
 
-        auto [ourBoard, ourShips] = ui::CreatePlacementMenu(std::move(emptyBoard), rules);
+        auto [ourBoard, ourShips] = ui::CreatePlacementMenu(std::move(emptyBoard), Rules);
 
         int numOfEnemyShips = DefaultNumOfShips;
         int numOfOurShips = DefaultNumOfShips;
