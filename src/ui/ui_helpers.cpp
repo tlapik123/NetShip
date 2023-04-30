@@ -9,11 +9,11 @@ namespace ui {
         auto height = board.size();
 
         auto boardCanvas = ftxui::Canvas(width * 2, height * 4);
-        for (int i = 0; i < width; ++i) {
-            auto canvasWidth = i * 2;
-            for (int j = 0; j < height; ++j) {
-                auto canvasHeight = j * 4;
-                if (board[i][j]) {
+        for (std::size_t row = 0; row < height; ++row) {
+            auto canvasHeight = row * 4;
+            for (std::size_t col = 0; col < width; ++col) {
+                auto canvasWidth = col * 2;
+                if (board[row][col]) {
                     boardCanvas.DrawText(canvasWidth, canvasHeight, "*", [](Pixel& p) {
                         p.foreground_color = Color::Red;
                         p.background_color = Color::GrayLight;

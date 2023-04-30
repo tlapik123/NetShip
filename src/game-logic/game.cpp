@@ -7,6 +7,7 @@
 
 #include "ui/screens.hpp"
 
+#include <thread>
 #include <iostream>
 
 namespace game {
@@ -70,18 +71,17 @@ namespace game {
          * @return Coordinates of the boarder around the ship.
         */
         data::coords_t GetShipBoarderCoords(const data::ship_coords_t& shipCoords, std::size_t boardSize) {
-            constexpr std::array rowOffsets = {-1, -1, -1, 0, 0, 1, 1, 1};
-            constexpr std::array colOffsets = {-1, 0, 1, -1, 1, -1, 0, 1};
+            constexpr std::array rowOffsets = {-1, -1, -1,  0,  0,  1, 1, 1};
+            constexpr std::array colOffsets = {-1,  0,  1, -1,  1, -1, 0, 1};
 
             data::coords_t boarderCoords;
 
             for (auto [row, col] : shipCoords) {
                 for (std::size_t i = 0; i < rowOffsets.size(); ++i) {
-                    auto currRow = row + rowOffsets[i];
-                    auto currCol = col + colOffsets[i];
+                    std::size_t currRow = row + rowOffsets[i];
+                    std::size_t currCol = col + colOffsets[i];
                     // check the for out of range
-                    if (currRow < 0 || currRow > boardSize ||
-                        currCol < 0 || currCol > boardSize) {
+                    if (currRow > boardSize || currCol > boardSize) {
                         continue;
                     }
 
@@ -117,7 +117,8 @@ namespace game {
             {2, 2}, // two ships of size 2
             {1, 2}, // two ships of size 1
         };
-        constexpr int DefaultNumOfShips = 7; // TODO: hardcoded for no
+        // TODO: count number of ships from the rules
+        constexpr int DefaultNumOfShips = 7; // TODO: hardcoded for now
 
         data::board_t enemyBoard = emptyBoard;
 
@@ -128,9 +129,9 @@ namespace game {
 
         // start the game with required data
         bool wePlay = res.AreWeServer;
-        while(true) {
+        while(numOfEnemyShips != 0 && numOfOurShips != 0) {
             if (wePlay) {
-                std::cout << "We are playing rn" << std::endl;
+                std::cout << "We are playing" << std::endl;
                 // get move from terminal
                 data::position_t pos = ui::GameScreen(ourBoard, enemyBoard);
                 auto [x, y] = pos;
@@ -143,33 +144,24 @@ namespace game {
                     enemyBoard[x][y] = true;
                     --numOfEnemyShips;
                     // mark the around of ship dead
-                    {
-                    auto sunkShipCoords = GetSunkShipCoords(enemyBoard, pos);
-                    auto sunkShipBorder = GetShipBoarderCoords(sunkShipCoords, enemyBoard.size());
-                    for (auto [row, col] : sunkShipCoords) {
-                        enemyBoard[row][col] = true;
-                    }
-                    for (auto [row, col] : sunkShipBorder) {
-                        enemyBoard[row][col] = true;
-                    }
-                    }
-                    // TODO some animation
-
-                    // did we win?
-                    if (numOfEnemyShips == 0) {
-                        // We won! do something on screen
-                        return;
-                    }
+                    // TODO: change ui board not logic board
+                    // {
+                    // auto sunkShipCoords = GetSunkShipCoords(enemyBoard, pos);
+                    // auto sunkShipBorder = GetShipBoarderCoords(sunkShipCoords, enemyBoard.size());
+                    // for (auto [row, col] : sunkShipBorder) {
+                    //     enemyBoard[row][col] = true;
+                    // }
+                    // }
+                    std::cout << "You have sunk the enemy ship!" << std::endl;
                     break;
                 case data::HitStatus::Hit:
                     enemyBoard[x][y] = true;
-                    // TODO some animation
+                    std::cout << "You have hit the enemy ship!" << std::endl;
                     break;
                 case data::HitStatus::Miss:
-                    // TODO some animation
+                    std::cout << "You have missed :(" << std::endl;
                     break;
                 }
-                std::cout << "number of enemy ships: " << numOfEnemyShips << std::endl;
             } else {
                 std::cout << "Enemy is playing" << std::endl;
                 // get position from the opponent
@@ -182,42 +174,42 @@ namespace game {
                     hitStatus = data::HitStatus::Hit;
                     // remove the target from board
                     ourBoard[x][y] = false;
-                    // update our own screen with the visual
 
+                    std::cout << "Enemy hit one of your ships!" << std::endl;
 
-                    bool sunken = false;
                     // update our ships
-                    for(auto& positions : ourShips) {
+                    for(auto it = ourShips.begin(); it != ourShips.end(); ++it) {
+                        auto& positions = *it;
                         if (positions.contains(pos)) {
                             positions.erase(pos);
                             if (positions.empty()) {
-                                sunken = true;
                                 --numOfOurShips;
                                 hitStatus = data::HitStatus::Sunken;
-                                // TODO: fix the erase on the list
-                                // ourShips.erase(position);
-                                // update our own screen with the visual
-                                auto sunkShipCoords = GetSunkShipCoords(enemyBoard, pos);
-                                auto sunkShipBorder = GetShipBoarderCoords(sunkShipCoords, enemyBoard.size());
-
-                                break; // this break is important since we have invalidated the iterator!
+                                ourShips.erase(it);
+                                std::cout << "The hit was a sunk! You are one ship short now." << std::endl;
                             }
+                            break; // this break is important since we could have invalidated the iterator!
                         }
                     }
-
-                    // did ve lose?
-                    if (numOfOurShips == 0) {
-                        // we lost
-                        // update our own screen with the visual
-                        return;
-                    }
                 } else {
-                    // show miss on the board
+                    std::cout << "The enemy have missed your ships!" << std::endl;
                 }
                 // signal to the opponent the status of the hit
                 transiever->Send(net_comms::HitStatusToData(hitStatus));
             }
             wePlay = !wePlay;
+        }
+
+        // did we win?
+        if (numOfEnemyShips == 0) {
+            std::cout << "You have WON!" << std::endl;
+            return;
+        }
+        // did ve lose?
+        if (numOfOurShips == 0) {
+            std::cout << "You have lost the game, better luck next time!" << std::endl;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            return;
         }
     }
 }

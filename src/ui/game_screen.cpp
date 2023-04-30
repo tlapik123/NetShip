@@ -13,8 +13,8 @@ namespace ui {
     data::position_t GameScreen(const data::board_t& ourBoard, const data::board_t& enemyBoard) {
         auto screen = ScreenInteractive::FitComponent();
 
-        int mouseX = 0;
-        int mouseY = 0;
+        int mouseCol = 0;
+        int mouseRow = 0;
 
         data::position_t lastPos = {0,0};
 
@@ -25,11 +25,12 @@ namespace ui {
         auto enemyBoardRenderer = Renderer([&]{
             auto boardCanvas = CanvasFromBoard(enemyBoard);
             // highlight hovered
-            boardCanvas.DrawText(mouseX * 2, mouseY * 4, boardCanvas.GetPixel(mouseX, mouseY).character, [](Pixel& p) {
+            boardCanvas.DrawText(mouseCol * 2, mouseRow * 4, boardCanvas.GetPixel(mouseCol, mouseRow).character, [](Pixel& p) {
                 p.background_color = Color::DarkBlue;
             });
             // highlight selected character
-            boardCanvas.DrawText(lastPos[0] * 2, lastPos[1] * 4, boardCanvas.GetPixel(mouseX, mouseY).character, [](Pixel& p) {
+            auto [row, col] = lastPos;
+            boardCanvas.DrawText(col * 2, row * 4, boardCanvas.GetPixel(mouseCol, mouseRow).character, [](Pixel& p) {
                 p.background_color = Color::Red;
             });
             return canvas(std::move(boardCanvas));
@@ -38,11 +39,11 @@ namespace ui {
         auto enemyBoardWithMouse = CatchEvent(enemyBoardRenderer, [&](Event e) {
             if (e.is_mouse()) {
                 auto& mouse = e.mouse();
-                mouseX = mouse.x - 18; // subtract left side width
-                mouseY = mouse.y - 7; // subtract top side height
+                mouseCol = mouse.x - 18; // subtract left side width
+                mouseRow = mouse.y - 7; // subtract top side height
 
-                if (mouse.button == Mouse::Left && mouseX < boardWidth && mouseY < boardHeight) {
-                    lastPos = {static_cast<std::size_t>(mouseX), static_cast<std::size_t>(mouseY)};
+                if (mouse.button == Mouse::Left && mouseCol < boardWidth && mouseRow < boardHeight) {
+                    lastPos = {static_cast<std::size_t>(mouseRow), static_cast<std::size_t>(mouseCol)};
                 }
             }
             return false;

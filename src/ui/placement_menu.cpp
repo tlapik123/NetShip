@@ -91,13 +91,13 @@ namespace ui {
             data::ship_coords_t tmpShipCoords;
 
             /** @brief Detect ships with some size contraint*/
-            auto detectShipFunc = [&](std::size_t row, std::size_t col, std::size_t minSize) {
+            auto detectShipFunc = [&](std::size_t row, std::size_t col) {
                 if (biggerGameBoard[row][col]) {
                     ++lastShipSize;
                     // add position to the current ship positions
                     tmpShipCoords.insert({row, col});
                 } else {
-                    if (lastShipSize >= minSize) {
+                    if (lastShipSize >= 2) {
                         retShips.push_back(std::move(tmpShipCoords));
                     }
                     tmpShipCoords.clear();
@@ -147,7 +147,7 @@ namespace ui {
             for (std::size_t row = 0; row < boardWidth; ++row) {
                 lastShipSize = 0; // size cant span across borders
                 for (std::size_t col = 0; col < boardWidth; ++col) {
-                    detectShipFunc(row, col, 2);
+                    detectShipFunc(row, col);
                 }
             }
 
@@ -155,7 +155,7 @@ namespace ui {
             for (std::size_t col = 0; col < boardWidth; ++col) {
                 lastShipSize = 0; // size cant span across borders
                 for (std::size_t row = 0; row < boardWidth; ++row) {
-                    detectShipFunc(row, col, 2);
+                    detectShipFunc(row, col);
                 }
             }
 
@@ -166,8 +166,8 @@ namespace ui {
     PlacementData CreatePlacementMenu(data::board_t&& gameBoard, const data::fleet_rules_t& fleetConfig) {
         auto screen = ScreenInteractive::FitComponent();
 
-        int mouseX = 0;
-        int mouseY = 0;
+        int mouseCol = 0;
+        int mouseRow = 0;
         bool mouseLeft = false;
         bool mouseRight = false;
 
@@ -178,23 +178,23 @@ namespace ui {
         auto board_renderer = Renderer([&] {
             auto boardCanvas = CanvasFromBoard(gameBoard);
             // highlight selected character
-            boardCanvas.DrawText(mouseX * 2, mouseY * 4, boardCanvas.GetPixel(mouseX, mouseY).character, [](Pixel& p) {
+            boardCanvas.DrawText(mouseCol * 2, mouseRow * 4, boardCanvas.GetPixel(mouseCol, mouseRow).character, [](Pixel& p) {
                 p.background_color = Color::DarkBlue;
             });
 
             // check mouse clicks
-            if (mouseLeft && mouseX < boardWidth && mouseY < boardHeight) {
-                gameBoard[mouseX][mouseY] = true;
-            } else if (mouseRight && mouseX < boardWidth && mouseY < boardHeight) {
-                gameBoard[mouseX][mouseY] = false;
+            if (mouseLeft && mouseCol < boardWidth && mouseRow < boardHeight) {
+                gameBoard[mouseRow][mouseCol] = true;
+            } else if (mouseRight && mouseCol < boardWidth && mouseRow < boardHeight) {
+                gameBoard[mouseRow][mouseCol] = false;
             }
             return canvas(std::move(boardCanvas));
         });
         auto board_with_mouse = CatchEvent(board_renderer, [&](Event e) {
             if (e.is_mouse()) {
                 auto& mouse = e.mouse();
-                mouseX = mouse.x - 4;// subtract left side width
-                mouseY = mouse.y - 5;// subtract top side height
+                mouseCol = mouse.x - 4;// subtract left side width
+                mouseRow = mouse.y - 5;// subtract top side height
                 mouseLeft = mouse.button == Mouse::Left;
                 mouseRight = mouse.button == Mouse::Right;
             }
