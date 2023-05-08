@@ -27,4 +27,14 @@ namespace data {
         Hit,
         Sunken,
     };
+
+    enum class DisplayType {
+        Empty,
+        Miss,
+        Ship,
+        Hit,
+        Sunken,
+    };
+
+    using display_board_t = std::vector<std::vector<DisplayType>>;
 }// namespace data

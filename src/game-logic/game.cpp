@@ -11,6 +11,7 @@
 #include <iostream>
 
 namespace game {
+    using namespace data;
     namespace {
         /**
          * @brief Get the coordinates of the sunken ship
@@ -19,7 +20,7 @@ namespace game {
          * @param pos Positions of the last hit.
          * @return Coordinates of the sunken ship. 
         */
-        data::ship_coords_t GetSunkShipCoords(const data::board_t& board, data::position_t pos) {
+        ship_coords_t GetSunkShipCoords(const board_t& board, position_t pos) {
             auto [row, col] = pos;
 
             auto height = board.size();
@@ -28,9 +29,9 @@ namespace game {
             constexpr std::array rowOffsets = {-1, 0, 0, 1};
             constexpr std::array colOffsets = { 0,-1, 1, 0};
             
-            data::ship_coords_t shipCoords;
+            ship_coords_t shipCoords;
 
-            auto isThereShipCheck = [&](data::idx_t row, data::idx_t col){
+            auto isThereShipCheck = [&](idx_t row, idx_t col){
                 return row < height && col < width && board[row][col];
             };
 
@@ -70,11 +71,11 @@ namespace game {
          * @param boardSize Size of the board to check against.
          * @return Coordinates of the boarder around the ship.
         */
-        data::coords_t GetShipBoarderCoords(const data::ship_coords_t& shipCoords, std::size_t boardSize) {
+        coords_t GetShipBoarderCoords(const ship_coords_t& shipCoords, std::size_t boardSize) {
             constexpr std::array rowOffsets = {-1, -1, -1,  0,  0,  1, 1, 1};
             constexpr std::array colOffsets = {-1,  0,  1, -1,  1, -1, 0, 1};
 
-            data::coords_t boarderCoords;
+            coords_t boarderCoords;
 
             for (auto [row, col] : shipCoords) {
                 for (std::size_t i = 0; i < rowOffsets.size(); ++i) {
@@ -85,7 +86,7 @@ namespace game {
                         continue;
                     }
 
-                    data::position_t currPos = {currRow, currCol};
+                    position_t currPos = {currRow, currCol};
                     if (shipCoords.contains(currPos)) continue;
                     boarderCoords.push_back(std::move(currPos));
                 }
@@ -95,27 +96,71 @@ namespace game {
 
 
         /**
+         * @brief Convert the logic board to the display board to visualize it.
+         * 
+         * @param board logic board to convert
+         * @return Display board with true on logic board as Ship on it.
+        */
+        display_board_t DisplayBoardFromBoard(const board_t& board) {
+            auto height = board.size();
+            auto width = board[0].size();
+
+            display_board_t retDisplBoard(
+                height, 
+                display_board_t::value_type(
+                    width, 
+                    DisplayType::Empty
+                )
+            );
+
+            for(std::size_t i = 0; i < height; ++i) {
+                for(std::size_t j = 0; j < width; ++j) {
+                    if(board[i][j]) retDisplBoard[i][j] = DisplayType::Ship;
+                }
+            }
+            return retDisplBoard;
+        }
+ 
+        /**
          * @brief Gets the number of ships from the rules given.
          * @param rules Rules of the game.
          * @return Number of ships.
         */
-        data::num_of_ships_t GetNumberOfShipsFromRules(const data::fleet_rules_t& rules) {
-            data::num_of_ships_t retNumOfShips = 0;
+        num_of_ships_t GetNumberOfShipsFromRules(const fleet_rules_t& rules) {
+            num_of_ships_t retNumOfShips = 0;
             for (const auto& [_, numOfShips] : rules) {
                 retNumOfShips += numOfShips;
             }
             return retNumOfShips;
         }
 
-        data::fleet_rules_t Rules {
+        /**
+         * @brief Mark the ship at pos as dead. Change the display board with this information.
+         * 
+         * @param board Board to search the ship in.
+         * @param pos Position of the last hit.
+         * @param outDisplBoard Display board to change.
+        */
+        void MarkDeadShip(const board_t board, position_t pos, display_board_t& outDisplBoard) {
+            auto sunkShipCoords = GetSunkShipCoords(board, pos);
+            auto sunkShipBorder = GetShipBoarderCoords(sunkShipCoords, board.size());
+            for(auto [row, col] : sunkShipCoords) {
+                outDisplBoard[row][col] = DisplayType::Sunken;
+            }
+            for (auto [row, col] : sunkShipBorder) {
+                outDisplBoard[row][col] = DisplayType::Miss;
+            }
+        }
+
+        fleet_rules_t Rules {
             {5, 1}, // one ship of size 5
             {4, 1}, // one ship of size 4
             {3, 1}, // one ship of size 4
             {2, 2}, // two ships of size 2
             {1, 2}, // two ships of size 1
         };
-        // TODO: count number of ships from the rules
-        data::num_of_ships_t DefaultNumOfShips = GetNumberOfShipsFromRules(Rules);
+        // count number of ships from the rules
+        num_of_ships_t DefaultNumOfShips = GetNumberOfShipsFromRules(Rules);
     }
 
     void Start() {
@@ -132,10 +177,13 @@ namespace game {
         std::cout << "Connected" << std::endl;
 
 
-        data::board_t emptyBoard(10, data::board_t::value_type(10, false));
-        data::board_t enemyBoard = emptyBoard;
+        board_t emptyBoard(10, board_t::value_type(10, false));
+        board_t enemyBoard = emptyBoard;
 
         auto [ourBoard, ourShips] = ui::CreatePlacementMenu(std::move(emptyBoard), Rules);
+
+        auto ourDisplBoard = DisplayBoardFromBoard(ourBoard);
+        auto enemyDisplBoard = DisplayBoardFromBoard(enemyBoard);
 
         int numOfEnemyShips = DefaultNumOfShips;
         int numOfOurShips = DefaultNumOfShips;
@@ -146,32 +194,27 @@ namespace game {
             if (wePlay) {
                 std::cout << "We are playing" << std::endl;
                 // get move from terminal
-                data::position_t pos = ui::GameScreen(ourBoard, enemyBoard);
+                position_t pos = ui::GameScreen(ourDisplBoard, enemyDisplBoard);
                 auto [x, y] = pos;
 
                 transiever->Send(net_comms::PositionToData(pos));
                 auto answer = net_comms::DataToHitStatus(transiever->Recieve());
 
                 switch (answer) {
-                case data::HitStatus::Sunken: 
+                case HitStatus::Sunken: 
                     enemyBoard[x][y] = true;
                     --numOfEnemyShips;
-                    // mark the around of ship dead
-                    // TODO: change ui board not logic board
-                    // {
-                    // auto sunkShipCoords = GetSunkShipCoords(enemyBoard, pos);
-                    // auto sunkShipBorder = GetShipBoarderCoords(sunkShipCoords, enemyBoard.size());
-                    // for (auto [row, col] : sunkShipBorder) {
-                    //     enemyBoard[row][col] = true;
-                    // }
-                    // }
+                    // mark the around of ship dead for display
+                    MarkDeadShip(enemyBoard, pos, enemyDisplBoard);
                     std::cout << "You have sunk the enemy ship!" << std::endl;
                     break;
-                case data::HitStatus::Hit:
+                case HitStatus::Hit:
                     enemyBoard[x][y] = true;
+                    enemyDisplBoard[x][y] = DisplayType::Hit;
                     std::cout << "You have hit the enemy ship!" << std::endl;
                     break;
-                case data::HitStatus::Miss:
+                case HitStatus::Miss:
+                    enemyDisplBoard[x][y] = DisplayType::Miss;
                     std::cout << "You have missed :(" << std::endl;
                     break;
                 }
@@ -182,12 +225,13 @@ namespace game {
                 auto [x, y] = pos;
 
                 // check if it hit anything
-                data::HitStatus hitStatus = data::HitStatus::Miss;
+                HitStatus hitStatus = HitStatus::Miss;
                 if (ourBoard[x][y]) {
-                    hitStatus = data::HitStatus::Hit;
+                    hitStatus = HitStatus::Hit;
                     // remove the target from board
                     ourBoard[x][y] = false;
 
+                    ourDisplBoard[x][y] = DisplayType::Hit;
                     std::cout << "Enemy hit one of your ships!" << std::endl;
 
                     // update our ships
@@ -197,7 +241,7 @@ namespace game {
                             positions.erase(pos);
                             if (positions.empty()) {
                                 --numOfOurShips;
-                                hitStatus = data::HitStatus::Sunken;
+                                hitStatus = HitStatus::Sunken;
                                 ourShips.erase(it);
                                 std::cout << "The hit was a sunk! You are one ship short now." << std::endl;
                             }
@@ -205,6 +249,7 @@ namespace game {
                         }
                     }
                 } else {
+                    ourDisplBoard[x][y] = DisplayType::Miss;
                     std::cout << "The enemy have missed your ships!" << std::endl;
                 }
                 // signal to the opponent the status of the hit

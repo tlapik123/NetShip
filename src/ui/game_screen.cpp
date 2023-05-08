@@ -9,30 +9,83 @@
 
 namespace ui {
     using namespace ftxui;
+    using namespace data;
 
-    data::position_t GameScreen(const data::board_t& ourBoard, const data::board_t& enemyBoard) {
+    namespace {
+        Canvas CanvasFromDisplayBoard(const display_board_t& board) {
+            auto width = board[0].size();
+            auto height = board.size();
+
+            auto boardCanvas = ftxui::Canvas(width * 2, height * 4);
+            for (std::size_t row = 0; row < height; ++row) {
+                auto canvasHeight = row * 4;
+                for (std::size_t col = 0; col < width; ++col) {
+                    auto canvasWidth = col * 2;
+                    auto val = board[row][col];
+                    switch (val) {
+                    case DisplayType::Empty: 
+                        boardCanvas.DrawText(canvasWidth, canvasHeight, " ", [](Pixel& p) {
+                            p.background_color = Color::BlueLight;
+                        });
+                        break;
+                    case DisplayType::Miss: 
+                        boardCanvas.DrawText(canvasWidth, canvasHeight, "M", [](Pixel& p) {
+                            p.background_color = Color::Blue;
+                            p.bold = true;
+                        });
+                        break;
+                    case DisplayType::Ship:
+                        boardCanvas.DrawText(canvasWidth, canvasHeight, "S", [](Pixel& p) {
+                            p.foreground_color = Color::Black;
+                            p.background_color = Color::GrayLight;
+                            p.bold = true;
+                        });
+                        break;
+                    case DisplayType::Hit: 
+                        boardCanvas.DrawText(canvasWidth, canvasHeight, "H", [](Pixel& p) {
+                            p.foreground_color = Color::Black;
+                            p.background_color = Color::Red;
+                            p.bold = true;
+                        });
+                        break;
+                    case DisplayType::Sunken: 
+                        boardCanvas.DrawText(canvasWidth, canvasHeight, " ", [](Pixel& p) {
+                            p.foreground_color = Color::Red;
+                            p.background_color = Color::Red;
+                        });
+                        break;
+                    }
+                }
+            }
+            return boardCanvas;
+        }
+    }
+
+    position_t GameScreen(const display_board_t& ourBoard, const display_board_t& enemyBoard) {
         auto screen = ScreenInteractive::FitComponent();
 
         int mouseCol = 0;
         int mouseRow = 0;
 
-        data::position_t lastPos = {0,0};
+        int lastPosRow = -1;
+        int lastPosCol = -1;
 
         auto boardWidth = ourBoard[0].size();
         auto boardHeight = ourBoard.size();
 
 
         auto enemyBoardRenderer = Renderer([&]{
-            auto boardCanvas = CanvasFromBoard(enemyBoard);
+            auto boardCanvas = CanvasFromDisplayBoard(enemyBoard);
             // highlight hovered
             boardCanvas.DrawText(mouseCol * 2, mouseRow * 4, boardCanvas.GetPixel(mouseCol, mouseRow).character, [](Pixel& p) {
                 p.background_color = Color::DarkBlue;
             });
             // highlight selected character
-            auto [row, col] = lastPos;
-            boardCanvas.DrawText(col * 2, row * 4, boardCanvas.GetPixel(mouseCol, mouseRow).character, [](Pixel& p) {
-                p.background_color = Color::Red;
-            });
+            if (lastPosCol != -1) {
+                boardCanvas.DrawText(lastPosCol * 2, lastPosRow * 4, boardCanvas.GetPixel(lastPosCol, lastPosRow).character, [](Pixel& p) {
+                    p.background_color = Color::Yellow;
+                });
+            }
             return canvas(std::move(boardCanvas));
         });
 
@@ -43,13 +96,14 @@ namespace ui {
                 mouseRow = mouse.y - 7; // subtract top side height
 
                 if (mouse.button == Mouse::Left && mouseCol < boardWidth && mouseRow < boardHeight) {
-                    lastPos = {static_cast<std::size_t>(mouseRow), static_cast<std::size_t>(mouseCol)};
+                    lastPosRow = mouseRow;
+                    lastPosCol = mouseCol;
                 }
             }
             return false;
         });
 
-        auto ourBoardWithoutMouse = Renderer([&]{return canvas(CanvasFromBoard(ourBoard));});
+        auto ourBoardWithoutMouse = Renderer([&]{return canvas(CanvasFromDisplayBoard(ourBoard));});
 
         auto buttonCheck = Button("FIRE!", screen.ExitLoopClosure());
 
@@ -74,6 +128,6 @@ namespace ui {
         });
         screen.Loop(game_renderer);
 
-        return lastPos;
+        return {static_cast<std::size_t>(lastPosRow), static_cast<std::size_t>(lastPosCol)};
     }
 }

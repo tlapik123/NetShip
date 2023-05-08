@@ -39,5 +39,5 @@ namespace ui {
      * @param ourBoard Board with our ships.
      * @param enemyBoard Board with enemy ships.
     */
-    data::position_t GameScreen(const data::board_t& ourBoard, const data::board_t& enemyBoard);
+    data::position_t GameScreen(const data::display_board_t& ourBoard, const data::display_board_t& enemyBoard);
 }
