@@ -7,13 +7,6 @@
 
 namespace ui {
     /**
-     * @brief Create canvas object from board data.
-     * @param board Board data
-     * @return Canvas created from board data.
-    */
-    ftxui::Canvas CanvasFromBoard(const data::board_t& board);
-
-    /**
      * @brief Render the gameboard with the "chess like" sides
      * 
      * @param headerText Header text for the board.
