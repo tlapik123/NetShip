@@ -9,11 +9,14 @@ NetShip is a battleship like peer-to-peer console game written as cpp programmin
 ### Without nix
 * ensure you have all the dependencies
 * `mkdir build && cd build`
-* `cmake ..`
+* `cmake -DCMAKE_BUILD_TYPE=Release ..`
+* `cmake --build .`
+* the resulting binary will be in `build` and will be named `netShip`
 
 ### With nix
 * dependencies are automatically handled by nix
 * `nix build`
+* the resulting binary will be in `result/bin` and will be named `netShip`
 
 ## How to play
 * you will controll the ui using your **keyboard and mouse**
@@ -33,12 +36,19 @@ NetShip is a battleship like peer-to-peer console game written as cpp programmin
 * *after you place your ships click the button to check the configuration and advance to the next screen*
 
 ### Game screen
-// TODO: fix this screen in code
 * on the left side you can see your configuration
 * on the right side you can see enemy board that you have uncovered
+* on the right side of the enemy board you can see a current game configuration
+    * it is not dynamic so it always shows all the ships
 * you can select a space to fire at it
     * when you press the button a shot will be fired at enemy
-* the hit status will be presented to you in text
+* the hit status will be presented to you in text and on the board
+    * M = Miss
+    * S = Ship
+    * H = Hit (or on your board sunk if all of the ship is hit)
+    * RED on enemy board = sunk
+        * if you sunk an enemy ship the places next to it will be indicated as a miss 
+            * this is to indicated that there is no ship around said ship and that you don't need to uncover those spaces
 * the game ends when you or your enemy have sunk all of the ships
 
 ## TODO:
