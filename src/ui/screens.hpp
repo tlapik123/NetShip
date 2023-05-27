@@ -22,7 +22,7 @@ namespace ui {
      * IF the user fails the placement call yourself again.
      * @param gameBoard To use as canvas and let user place ships on it.
      * @param fleetConfig Rules of the game (how many ships and of what size).
-     * @return PlacementData (board and sthip) from the menu.
+     * @return PlacementData (board and ship) from the menu.
     */
     PlacementData CreatePlacementMenu(data::board_t&& gameBoard, const data::fleet_rules_t& fleetConfig);
 
@@ -34,7 +34,7 @@ namespace ui {
     MenuData CreateMenu(int defaultPortNum = 4242);
 
     /**
-     * @brief Create game screen with your and enemy ships with ability to fire at anemy.
+     * @brief Create game screen with your and enemy ships with ability to fire at enemy.
      * 
      * @param ourBoard Board with our ships.
      * @param enemyBoard Board with enemy ships.

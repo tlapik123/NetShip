@@ -10,6 +10,6 @@ namespace net_comms {
 
     public:
         void Send(std::vector<std::byte> dataToSend);
-        std::vector<std::byte> Recieve();
+        std::vector<std::byte> Receive();
     };
 }

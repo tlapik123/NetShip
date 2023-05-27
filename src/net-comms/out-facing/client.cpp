@@ -5,7 +5,7 @@
 namespace net_comms {
     using asio::ip::tcp;
 
-    Client::Client(std::string ipAdress, int portNumber) {
-        mEstablishedSocket.connect(tcp::endpoint(asio::ip::address::from_string(ipAdress), portNumber));
+    Client::Client(std::string ipAddress, int portNumber) {
+        mEstablishedSocket.connect(tcp::endpoint(asio::ip::address::from_string(ipAddress), portNumber));
     }
 }// namespace net_comms

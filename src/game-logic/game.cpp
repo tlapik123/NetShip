@@ -167,12 +167,12 @@ namespace game {
         // initial menu
         auto res = ui::CreateMenu();
         // connect players
-        std::unique_ptr<net_comms::CommonCS> transiever;
+        std::unique_ptr<net_comms::CommonCS> transceiver;
         if (res.AreWeServer) {
             std::cout << "Waiting for client..." << std::endl;
-            transiever = std::make_unique<net_comms::Server>(res.PortNumber);
+            transceiver = std::make_unique<net_comms::Server>(res.PortNumber);
         } else {
-            transiever = std::make_unique<net_comms::Client>(res.IpAddr, res.PortNumber);
+            transceiver = std::make_unique<net_comms::Client>(res.IpAddr, res.PortNumber);
         }
         std::cout << "Connected" << std::endl;
 
@@ -197,8 +197,8 @@ namespace game {
                 position_t pos = ui::GameScreen(ourDisplBoard, enemyDisplBoard);
                 auto [x, y] = pos;
 
-                transiever->Send(net_comms::PositionToData(pos));
-                auto answer = net_comms::DataToHitStatus(transiever->Recieve());
+                transceiver->Send(net_comms::PositionToData(pos));
+                auto answer = net_comms::DataToHitStatus(transceiver->Receive());
 
                 switch (answer) {
                 case HitStatus::Sunken: 
@@ -221,7 +221,7 @@ namespace game {
             } else {
                 std::cout << "Enemy is playing" << std::endl;
                 // get position from the opponent
-                auto pos = net_comms::DataToPosition(transiever->Recieve());
+                auto pos = net_comms::DataToPosition(transceiver->Receive());
                 auto [x, y] = pos;
 
                 // check if it hit anything
@@ -253,7 +253,7 @@ namespace game {
                     std::cout << "The enemy have missed your ships!" << std::endl;
                 }
                 // signal to the opponent the status of the hit
-                transiever->Send(net_comms::HitStatusToData(hitStatus));
+                transceiver->Send(net_comms::HitStatusToData(hitStatus));
             }
             wePlay = !wePlay;
         }

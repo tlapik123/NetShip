@@ -10,7 +10,7 @@ namespace ui {
      * @brief Render the gameboard with the "chess like" sides
      * 
      * @param headerText Header text for the board.
-     * @param board Board componenet to render.
+     * @param board Board component to render.
     */
     ftxui::Element BoardRender(const std::string& headerText, ftxui::Component board);
 

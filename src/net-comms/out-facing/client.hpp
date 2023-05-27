@@ -6,6 +6,6 @@ namespace net_comms {
     class Client : public CommonCS {        
 
     public:
-        Client(std::string ipAdress, int portNumber);
+        Client(std::string ipAddress, int portNumber);
     };
 }

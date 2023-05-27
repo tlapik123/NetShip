@@ -70,7 +70,7 @@ namespace ui {
         data::ships_t ShipsFromBoardUnchecked(const data::board_t& board) {
             /**
              * We will need a "one bigger" gameBoard for better ship detection.
-             * This is needed because of easiry "edge" case handling
+             * This is needed because of easier "edge" case handling
              * Make copy of current board and make it bigger
             */
             data::board_t biggerGameBoard = board;
